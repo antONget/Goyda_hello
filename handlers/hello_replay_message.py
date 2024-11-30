@@ -1,4 +1,4 @@
-from aiogram import Router, Bot
+from aiogram import Router, Bot, F
 from aiogram.types import Message
 from filters.groups_chat import IsGroup
 from config_data.config import Config, load_config
@@ -11,7 +11,7 @@ config: Config = load_config()
 router = Router()
 
 
-@router.message(IsGroup())
+@router.message(IsGroup(), F.text)
 @error_handler
 async def check_messages(message: Message, bot: Bot):
     logging.info(f'check_messages {message.message_thread_id} {message.chat.id}')

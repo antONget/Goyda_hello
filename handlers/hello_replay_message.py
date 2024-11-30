@@ -15,7 +15,7 @@ router = Router()
 @error_handler
 async def check_messages(message: Message, bot: Bot):
     logging.info(f'check_messages {message.message_thread_id} {message.chat.id}')
-    if message.text == 'Гойда':
+    if message.text.lower() == 'гойда':
         await message.answer(text='Гойда')
 
 

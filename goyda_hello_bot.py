@@ -13,7 +13,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from config_data.config import Config, load_config
 
-from handlers import hello_replay_message, other_handlers
+from handlers import hello_replay_message, admin_mode, other_handlers
 from handlers.hello_replay_message import scheduler_messages
 from notify_admins import on_startup_notify
 # Инициализируем logger
@@ -45,6 +45,7 @@ async def main():
     await on_startup_notify(bot=bot)
     # Регистрируем router в диспетчере
     dp.include_router(hello_replay_message.router)
+    dp.include_router(admin_mode.router)
     dp.include_router(other_handlers.router)
 
     @dp.error()

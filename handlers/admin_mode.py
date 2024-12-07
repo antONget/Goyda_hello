@@ -124,8 +124,8 @@ async def delete_word(message: Message, state: FSMContext, bot: Bot):
 @error_handler
 async def process_reaction(message: Message, state: FSMContext, bot: Bot):
     logging.info(f'process_time')
-    await message.answer(text='Раздел в разработке')
-    return
+    # await message.answer(text='Раздел в разработке')
+    # return
     await message.answer(text='Пришлите время для отправки сообщения, в минутах')
     await state.set_state(Word.time_state)
 

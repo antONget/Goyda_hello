@@ -10,7 +10,7 @@ from aiogram.types import ErrorEvent
 import traceback
 from typing import Any, Dict
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-
+from apscheduler.schedulers.background import BackgroundScheduler
 from config_data.config import Config, load_config
 from database.models import async_main
 from handlers import hello_replay_message, admin_mode, other_handlers
@@ -43,7 +43,7 @@ async def main():
     # task = asyncio.create_task(alert_user_sub(bot=bot))
 
     dp = Dispatcher()
-    scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
+    scheduler = BackgroundScheduler(timezone="Europe/Moscow")
     scheduler.add_job(scheduler_messages, 'cron', minute="*/15", args=(bot,), id='my_job_id')
     scheduler.start()
     await on_startup_notify(bot=bot)

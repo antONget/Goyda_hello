@@ -142,7 +142,8 @@ async def delete_word(message: Message, state: FSMContext, bot: Bot):
         await add_time(data=data_time)
         await message.answer(text=f'Время таймера успешно изменено на {message.text} минут')
         interval: str = f'*/{int(message.text)}'
-        AsyncIOScheduler.reschedule_job(job_id='my_job_id', trigger='cron', minute=interval)
+        scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
+        scheduler.reschedule_job(job_id='my_job_id', trigger='cron', minute=interval)
         await state.set_state(state=None)
     else:
         await message.answer(text='Некорректно указано число')

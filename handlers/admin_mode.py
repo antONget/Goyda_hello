@@ -13,7 +13,7 @@ from database.requests_key_words import add_key_word, select_key_words, delete_k
 import logging
 import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.schedulers.background import BackgroundScheduler
+# from apscheduler.schedulers.background import BackgroundScheduler
 
 config: Config = load_config()
 router = Router()
@@ -124,10 +124,10 @@ async def delete_word(message: Message, state: FSMContext, bot: Bot):
 @error_handler
 async def process_reaction(message: Message, state: FSMContext, bot: Bot):
     logging.info(f'process_time')
-    # await message.answer(text='Раздел в разработке')
-    # return
-    await message.answer(text='Пришлите время для отправки сообщения, в минутах')
-    await state.set_state(Word.time_state)
+    await message.answer(text='Раздел в разработке')
+    return
+    # await message.answer(text='Пришлите время для отправки сообщения, в минутах')
+    # await state.set_state(Word.time_state)
 
 
 @router.message(IsSuperAdmin(), StateFilter(Word.time_state), F.text)
@@ -142,7 +142,7 @@ async def delete_word(message: Message, state: FSMContext, bot: Bot):
         await add_time(data=data_time)
         await message.answer(text=f'Время таймера успешно изменено на {message.text} минут')
         interval: str = f'*/{int(message.text)}'
-        scheduler = BackgroundScheduler(timezone="Europe/Moscow")
+        scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
         scheduler.reschedule_job(job_id='my_job_id', trigger='cron', minute=interval)
         await state.set_state(state=None)
     else:

@@ -43,7 +43,7 @@ async def main():
     # task = asyncio.create_task(alert_user_sub(bot=bot))
 
     dp = Dispatcher()
-    scheduler = BackgroundScheduler(timezone="Europe/Moscow")
+    scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
     scheduler.add_job(scheduler_messages, 'cron', minute="*/15", args=(bot,), id='my_job_id')
     scheduler.start()
     await on_startup_notify(bot=bot)

@@ -44,7 +44,7 @@ async def main():
 
     dp = Dispatcher()
     scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
-    scheduler.add_job(scheduler_messages, 'cron', minute="*/15", args=(bot,))
+    scheduler.add_job(scheduler_messages, 'cron', minute="*/15", args=(bot,), id='my_job_id')
     scheduler.start()
     await on_startup_notify(bot=bot)
     # Регистрируем router в диспетчере

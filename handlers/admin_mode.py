@@ -7,10 +7,13 @@ from aiogram.fsm.context import FSMContext
 from filters.admin_filter import IsSuperAdmin
 from config_data.config import Config, load_config
 from utils.error_handling import error_handler
-from keyboards.admin_mode_keyboard import main_admin_mode, delete_add_key_word
-from database.requests_key_words import add_key_word, select_key_words, delete_key_word
+from keyboards.admin_mode_keyboard import keyboard_main_button, main_admin_mode, delete_add_key_word
+from database.requests_key_words import add_key_word, select_key_words, delete_key_word, add_emodji, add_time, select_emodji
 
 import logging
+import asyncio
+import os
+import signal
 
 
 config: Config = load_config()
@@ -21,22 +24,32 @@ router.message.filter(F.chat.type == "private")
 class Word(StatesGroup):
     add_word = State()
     delete_word = State()
+    emodji = State()
+    time_state = State()
 
 
-@router.message(IsSuperAdmin(), CommandStart)
+@router.message(IsSuperAdmin(), CommandStart())
 @error_handler
 async def admin_mode(message: Message, bot: Bot):
     logging.info(f'admin_mode')
     await message.answer(text='Выберите раздел',
+                         reply_markup=keyboard_main_button())
+
+
+@router.message(IsSuperAdmin(), F.text == 'Реакции')
+@error_handler
+async def process_reaction(message: Message, state: FSMContext, bot: Bot):
+    logging.info(f'process_reaction')
+    await message.answer(text='Выберите раздел',
                          reply_markup=main_admin_mode())
 
 
-@router.message(IsSuperAdmin(), F.text == 'Ключевые слова')
+@router.callback_query(F.data == 'key_word')
 @error_handler
-async def admin_mode(message: Message, bot: Bot):
+async def admin_mode(callback: CallbackQuery, bot: Bot):
     logging.info(f'admin_mode')
-    await message.answer(text='Добавить или  удалить ключевое слово?',
-                         reply_markup=delete_add_key_word())
+    await callback.message.edit_text(text='Добавить или  удалить ключевое слово?',
+                                     reply_markup=delete_add_key_word())
 
 
 @router.callback_query(F.data.startswith('word'))
@@ -53,8 +66,8 @@ async def process_word(callback: CallbackQuery, state: FSMContext, bot: Bot):
         list_key_word = await select_key_words()
         text = '<b>Список ключевых слов:</b>\n\n'
         for i, word in enumerate(list_key_word):
-            text += f'{i+1}. {word}\n'
-        await callback.message.edit_text(text='Пришлите номер ключевого слова для удаления')
+            text += f'{i+1}. {word.word}\n'
+        await callback.message.edit_text(text=f'Пришлите номер ключевого слова для удаления\n\n {text}')
         await state.set_state(Word.delete_word)
     await callback.answer()
 
@@ -63,11 +76,12 @@ async def process_word(callback: CallbackQuery, state: FSMContext, bot: Bot):
 @error_handler
 async def add_word(message: Message, state: FSMContext, bot: Bot):
     logging.info(f'add_word')
-    if message.text in ['Ключевые слова', 'Выбор эмодзи для реакций']:
+    if message.text in ['Реакции', 'Частота отправки сообщений в чат']:
         await message.answer(text='Операция прервана...')
         return
-    await add_key_word(word=message.text)
-    await message.answer(text=f'Ключевое слово {message.text} успешно добавлено в список')
+    dict_data = {'word': message.text}
+    await add_key_word(data=dict_data)
+    await message.answer(text=f'Ключевое слово <i>{message.text}</i> успешно добавлено в список')
     await state.set_state(state=None)
 
 
@@ -75,7 +89,7 @@ async def add_word(message: Message, state: FSMContext, bot: Bot):
 @error_handler
 async def delete_word(message: Message, state: FSMContext, bot: Bot):
     logging.info(f'delete_word')
-    if message.text in ['Ключевые слова', 'Выбор эмодзи для реакций']:
+    if message.text in ['Реакции', 'Частота отправки сообщений в чат']:
         await message.answer(text='Операция прервана...')
         return
     if message.text.isdigit():
@@ -83,8 +97,68 @@ async def delete_word(message: Message, state: FSMContext, bot: Bot):
         for i, word in enumerate(list_key_word):
             if int(message.text) == i + 1:
                 await delete_key_word(id_word=i)
-                await message.answer(text=f'Ключевое слово {word.word} успешно удалено')
+                await message.answer(text=f'Ключевое слово <i>{word.word}</i> успешно удалено')
                 break
         await state.set_state(state=None)
     else:
         await message.answer(text='Некорректно указано число')
+
+
+@router.callback_query(F.data == 'emodji')
+@error_handler
+async def admin_mode_emodji(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    logging.info(f'admin_mode_emodji')
+    await callback.message.edit_text(text='Пришлите эмодзи для реакций')
+    await state.set_state(Word.emodji)
+
+
+@router.message(IsSuperAdmin(), StateFilter(Word.emodji), F.text)
+@error_handler
+async def delete_word(message: Message, state: FSMContext, bot: Bot):
+    logging.info(f'delete_word')
+    data = {'emodji': message.text}
+    await add_emodji(data=data)
+    await message.answer(text=f'Эмодзи {message.text} успешно добавлен')
+
+
+@router.message(IsSuperAdmin(), F.text == 'Частота отправки сообщений в чат')
+@error_handler
+async def process_reaction(message: Message, state: FSMContext, bot: Bot):
+    logging.info(f'process_time')
+    await message.answer(text='Раздел в разработке')
+    return
+    # await message.answer(text='Пришлите время для отправки сообщения, в минутах')
+    # await state.set_state(Word.time_state)
+
+
+@router.message(IsSuperAdmin(), StateFilter(Word.time_state), F.text)
+@error_handler
+async def delete_word(message: Message, state: FSMContext, bot: Bot):
+    logging.info(f'delete_word')
+    if message.text in ['Реакции', 'Частота отправки сообщений в чат']:
+        await message.answer(text='Операция прервана...')
+        return
+    if message.text.isdigit():
+        data_time = {'time': int(message.text)}
+        await add_time(data=data_time)
+        await message.answer(text=f'Время таймера успешно изменено на {message.text} минут')
+        data: dict = await state.get_state()
+        if data.get('task'):
+            data['task'].cancel()
+        else:
+            task = asyncio.create_task(alert_user_sub(bot=bot, time_interval=int(message.text)))
+            await state.update_data(task=task)
+        await state.set_state(state=None)
+    else:
+        await message.answer(text='Некорректно указано число')
+
+
+async def alert_user_sub(bot: Bot, time_interval: int = 15):
+    while True:
+        await asyncio.sleep(time_interval * 60)
+        msg = await bot.send_message(chat_id=config.tg_bot.group_id,
+                                     text='Гойда')
+        emodji = await select_emodji()
+        await bot.set_message_reaction(chat_id=msg.chat.id,
+                                       message_id=msg.message_id,
+                                       reaction=[{"type": "emoji", "emoji": emodji.emodji}])

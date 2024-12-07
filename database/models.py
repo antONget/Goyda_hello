@@ -43,14 +43,20 @@ class User(Base):
 
 class KeyWords(Base):
     __tablename__ = 'keywords'
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id_word: Mapped[int] = mapped_column(Integer, primary_key=True)
     word: Mapped[str] = mapped_column(String(100))
 
 
 class Emodji(Base):
     __tablename__ = 'emodji'
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     emodji: Mapped[str] = mapped_column(String(100))
+
+
+class Time(Base):
+    __tablename__ = 'time'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    time: Mapped[int] = mapped_column(Integer)
 
 
 async def async_main():

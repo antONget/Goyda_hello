@@ -12,8 +12,9 @@ from typing import Any, Dict
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from config_data.config import Config, load_config
-
+from database.models import async_main
 from handlers import hello_replay_message, admin_mode, other_handlers
+from handlers.admin_mode import alert_user_sub
 from handlers.hello_replay_message import scheduler_messages
 from notify_admins import on_startup_notify
 # Инициализируем logger
@@ -23,6 +24,7 @@ logger = logging.getLogger(__name__)
 # Функция конфигурирования и запуска бота
 async def main():
     # Конфигурируем логирование
+    await async_main()
     logging.basicConfig(
         level=logging.INFO,
         # filename="py_log.log",
@@ -38,6 +40,8 @@ async def main():
 
     # Инициализируем бот и диспетчер
     bot = Bot(token=config.tg_bot.token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    # task = asyncio.create_task(alert_user_sub(bot=bot))
+
     dp = Dispatcher()
     scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
     scheduler.add_job(scheduler_messages, 'cron', minute="*/15", args=(bot,))

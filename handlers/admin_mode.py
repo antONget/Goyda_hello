@@ -23,7 +23,7 @@ class Word(StatesGroup):
     delete_word = State()
 
 
-@router.message(IsSuperAdmin, CommandStart)
+@router.message(IsSuperAdmin(), CommandStart)
 @error_handler
 async def admin_mode(message: Message, bot: Bot):
     logging.info(f'admin_mode')
@@ -31,7 +31,7 @@ async def admin_mode(message: Message, bot: Bot):
                          reply_markup=main_admin_mode())
 
 
-@router.message(IsSuperAdmin, F.text == 'Ключевые слова')
+@router.message(IsSuperAdmin(), F.text == 'Ключевые слова')
 @error_handler
 async def admin_mode(message: Message, bot: Bot):
     logging.info(f'admin_mode')
@@ -59,7 +59,7 @@ async def process_word(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await callback.answer()
 
 
-@router.message(IsSuperAdmin, StateFilter(Word.add_word), F.text)
+@router.message(IsSuperAdmin(), StateFilter(Word.add_word), F.text)
 @error_handler
 async def add_word(message: Message, state: FSMContext, bot: Bot):
     logging.info(f'add_word')
@@ -71,7 +71,7 @@ async def add_word(message: Message, state: FSMContext, bot: Bot):
     await state.set_state(state=None)
 
 
-@router.message(IsSuperAdmin, StateFilter(Word.delete_word), F.text)
+@router.message(IsSuperAdmin(), StateFilter(Word.delete_word), F.text)
 @error_handler
 async def delete_word(message: Message, state: FSMContext, bot: Bot):
     logging.info(f'delete_word')

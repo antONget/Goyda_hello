@@ -115,6 +115,9 @@ async def admin_mode_emodji(callback: CallbackQuery, state: FSMContext, bot: Bot
 @error_handler
 async def delete_word(message: Message, state: FSMContext, bot: Bot):
     logging.info(f'delete_word')
+    if message.text in ['Реакции', 'Частота отправки сообщений в чат']:
+        await message.answer(text='Операция прервана...')
+        return
     data = {'emodji': message.text}
     await add_emodji(data=data)
     await message.answer(text=f'Эмодзи {message.text} успешно добавлен')

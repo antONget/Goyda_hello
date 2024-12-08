@@ -129,8 +129,8 @@ async def delete_word(message: Message, state: FSMContext, bot: Bot):
         await message.answer(text=f'Эмодзи {message.text} успешно добавлен')
         await state.set_state(state=None)
     else:
-        await message.answer(text=f'Эмодзи {message.text} не может быть использовано в качестве реакции'
-                                  f' для реакции используйте одно из этих эмодзи - {" ".join(list_emodji)}')
+        await message.answer(text=f'Эмодзи {message.text} не может быть использовано в качестве реакции.'
+                                  f' Используйте одно из этих эмодзи - {" ".join(list_emodji)}')
 
 
 @router.message(IsSuperAdmin(), F.text == 'Частота отправки сообщений в чат')

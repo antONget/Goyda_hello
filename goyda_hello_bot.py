@@ -56,8 +56,8 @@ async def main():
     async def error_handler(event: ErrorEvent, data: Dict[str, Any]):
         logger.critical("Критическая ошибка: %s", event.exception, exc_info=True)
         user: User = data.get('event_from_user')
-        await bot.send_message(chat_id=user.id,
-                               text='Упс.. Что-то пошло не так( Перезапустите бота /start')
+        # await bot.send_message(chat_id=user.id,
+        #                        text='Упс.. Что-то пошло не так( Перезапустите бота /start')
         await bot.send_message(chat_id=config.tg_bot.support_id,
                                text=f'{event.exception}')
         formatted_lines = traceback.format_exc()
